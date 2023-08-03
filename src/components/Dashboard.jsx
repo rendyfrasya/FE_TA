@@ -10,6 +10,7 @@ import mqtt from "precompiled-mqtt";
 import mqttClient from "../api/mqttAPI";
 
 var temperature;
+var nilaiPPM;
 var waterTemperature;
 var humidity;
 let buttonPPMU;
@@ -309,9 +310,13 @@ const startAwal = async () => {
         if (topic === '/mqttWaterTemp') {
           waterTemperature = message.toString();
         }
+        if (topic === '/mqttPPM') {
+          nilaiPPM = message.toString();
+        }
         setSuhu(temperature);
         setKelembaban(humidity); 
         setSuhuAir(waterTemperature);
+        setPPM(nilaiPPM);
       });
     }catch{
       console.log(error)
@@ -392,6 +397,7 @@ const handleTombol4 = async() =>  {
     subscribeToTopicTemp("/mqttTemp");
     subscribeToTopicTemp("/mqttHum");
     subscribeToTopicTemp("/mqttWaterTemp");
+    subscribeToTopicTemp("/mqttPPM");
     subscribeToTopicTemp("/buttonPPMU");
     subscribeToTopicTemp("/buttonPPMD"); 
     subscribeToTopicTemp("/buttonPHU");
