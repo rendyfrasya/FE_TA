@@ -120,8 +120,8 @@ function Clock(props) {
   });
   return (
    
-      <div className="grid md:flex justify-between items-center mt-1 text-base-content mx-2">
-      <div className="grid gap-2">
+      <div className="grid md:flex justify-between items-center mt-6 md:mt-1 text-base-content mx-2">
+      <div className="grid">
       <p className="text-4xl font-aku font-bold">{[currentDay]}</p>
       <p className="text-3xl font-aku">{[currentYear]}</p>
       </div>

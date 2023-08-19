@@ -1,6 +1,6 @@
 const Navbar = () =>{
     return(
-  <div className="navbar bg-primary w-5/6 md:w-full mt-4 rounded-full font-medium font-aku">
+  <div className="navbar bg-primary w-[22rem] md:w-full mt-4 rounded-full font-medium font-aku">
            <div className="navbar-start w-[43%]">
   <div className="flex-1">
     <a className="ml-4 normal-case text-2xl text-base-100 font-bold">monSYS</a>

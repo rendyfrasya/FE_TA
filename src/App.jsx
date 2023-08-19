@@ -14,7 +14,7 @@ function App() {
       <div className='mt-2'>
       <Navbar/>
     </div>
-    <div className="grid md:p-5">
+    <div className="grid mb-9 md:p-5">
     <Clock/>
    <Dashboard/>
     </div>

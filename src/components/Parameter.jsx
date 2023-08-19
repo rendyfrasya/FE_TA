@@ -1,18 +1,22 @@
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import dayjs from "dayjs";
-import api from "../api";
+import api from "../api/index";
+import mqttClient from "../api/mqttAPI";
 
 function Parameter(props) {
   const format = "HH:mm:ss";
   const [targetPPM,setTargetPPM] = useState('');
   const [targetpH,setTargetpH] = useState('');
-  const [kirimPPM,setKirimPPM] = useState('');
-  const [kirimpH,setKirimpH] = useState('');
-
+  const [kirimPPM,setKirimPPM] = useState(0);
+  const [kirimpH,setKirimpH] = useState(0);
+  function subscribeToTopicTemp(topic) {
+    console.log(`Subscribing to Topic: ${topic}`);
+    mqttClient.subscribe(topic, { qos: 0 });
+  }
   const button = async () => {
     await api.get(`/gettarget`).then((response) => {
     let getppm = response.data[0].data[0].target_ppm
-    let getpH = response.data[0].data[0].target_ph
+    let getpH = response.data[0].data[0].target_pH
     setTargetPPM(getppm)
     setTargetpH(getpH)
     });
@@ -22,6 +26,7 @@ function Parameter(props) {
     const { target } = event;
     const { value } = target;
     setKirimPPM(value)
+    
   }
   const handleChangepH = (event) => {
     const { target } = event;
@@ -30,9 +35,6 @@ function Parameter(props) {
   }
   
   const handleKirimTarget = async () => {
-    kirimPPM ? setTargetPPM(kirimPPM) : ""
-    kirimpH ? setTargetpH(kirimpH) : ""
-    
     await api
     .post(`/updatetarget`, null, {
       params: {
@@ -42,6 +44,18 @@ function Parameter(props) {
     })
     .then((response) => response.status)
     .catch((err) => console.warn(err));
+    try{
+      mqttClient.publish("/targetPPM", kirimPPM.toString(), {
+        qos: 0,
+        retain: false,
+      });
+      mqttClient.publish("/targetPH", kirimpH.toString(), {
+        qos: 0,
+        retain: false,
+      });
+    }catch{
+      console.log(error)
+    }
   }
   return (
     <div className="justify-center items-center">

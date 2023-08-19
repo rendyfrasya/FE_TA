@@ -3,23 +3,22 @@ import {TbTemperature} from "react-icons/tb";
 import {WiHumidity, WiMoonThirdQuarter} from "react-icons/wi"
 import {RiWaterFlashFill} from "react-icons/ri"
 import {BiWater} from "react-icons/bi"
-
+import {GiPlantWatering} from "react-icons/gi"
 import Timepick from "./Timepick";
 import Parameter from "./Parameter";
-import mqtt from "precompiled-mqtt";
 import mqttClient from "../api/mqttAPI";
+import api from "../api/index"
 
 var temperature;
 var nilaiPPM;
+var nilaipH;
 var waterTemperature;
 var humidity;
+var humMed;
 let buttonPPMU;
 let buttonPPMD;
 let buttonPHU;
 let buttonPHD;
-const mqttHost = "monsys.cloud";
-const protocol = "ws";
-const port = "9001";
 
 function Dashboard(){
   const [tombolPPMD, setTombolPPMD] = useState(true);
@@ -28,12 +27,14 @@ function Dashboard(){
   const [tombolpHDown, setTombolpHDown] = useState(true);
   const [tombolSiram, setTombolSiram] = useState(true);
   const [dataSensor, setDataSensor] = useState([]);
-  const [targetPPM,setTargetPPM] = useState('');
+  const [targetPPM,setTargetPPM] = useState();
+  const [targetpH,setTargetpH] = useState();
   const [suhu,setSuhu] = useState();
   const [suhuAir,setSuhuAir] = useState();
   const [kelembaban,setKelembaban] = useState();
   const [kelembaban_med,setKelembaban_med] = useState();
   const [ppm,setPPM] = useState();
+  const [pH,setNilaipH] = useState();
   const [tombol1,setTombol1] = useState(1);
   const [tombol2,setTombol2] = useState(1);
   const [tombol3,setTombol3] = useState(1);
@@ -57,15 +58,18 @@ const startAwal = async () => {
       setTombol1("1")
     }
   };
-  // const getDataTargetPPM = async () => {
-  //   await api.get(`/gettargetppm`).then((response) => {
-  //     let target = response.data[0].data[0].target_ppm
-  //     setTargetPPM(target)
-  //   });
-  //     setTimeout(() => {
-  //       getDataTargetPPM();
-  //     }, 1000);
-  // };
+  const getDataTarget = async () => {
+    
+    await api.get(`/gettarget`).then((response) => {
+      let getppm = response.data[0].data[0].target_ppm
+      let getpH = response.data[0].data[0].target_pH
+      setTargetPPM(getppm)
+      setTargetpH(getpH)
+    });
+      setTimeout(() => {
+        getDataTarget();
+      }, 1000);
+  };
 
   // const getDataTombolPPMD = async () => {
   //   await api.get(`/getppmD`).then((response) => {
@@ -313,10 +317,18 @@ const startAwal = async () => {
         if (topic === '/mqttPPM') {
           nilaiPPM = message.toString();
         }
+        if (topic === '/mqttpH') {
+          nilaipH = message.toString();
+        }
+        if (topic === '/mqttHumMed') {
+          humMed = message.toString();
+        }
         setSuhu(temperature);
         setKelembaban(humidity); 
         setSuhuAir(waterTemperature);
         setPPM(nilaiPPM);
+        setNilaipH(nilaipH);
+        setKelembaban_med(humMed)
       });
     }catch{
       console.log(error)
@@ -394,10 +406,13 @@ const handleTombol4 = async() =>  {
     // getDataTombolSiram();
     // getDataTargetPPM();
     // connectToBroker();
+    getDataTarget();
     subscribeToTopicTemp("/mqttTemp");
     subscribeToTopicTemp("/mqttHum");
+    subscribeToTopicTemp("/mqttHumMed");
     subscribeToTopicTemp("/mqttWaterTemp");
     subscribeToTopicTemp("/mqttPPM");
+    subscribeToTopicTemp("/mqttpH");
     subscribeToTopicTemp("/buttonPPMU");
     subscribeToTopicTemp("/buttonPPMD"); 
     subscribeToTopicTemp("/buttonPHU");
@@ -418,14 +433,14 @@ const handleTombol4 = async() =>  {
           {/* {dataSensor.map((data,id) => ( */}
             <div className="flex flex-col justify-stretch md:flex-row gap-4">
 
-               <div className="card w-full md:w-1/4 border-4 border-primary">
+               <div className="card w-[22rem] md:w-1/3 border-4 border-primary">
                 <div className="flex-row text-neutral card-body items-center justify-between">
-                <div className="flex md:gap-4 text-start">
+                <div className="flex gap-3 text-start justify-center">
                 <div className="grid w-20 h-20 rounded-2xl bg-primary text-white place-content-center">
                 <TbTemperature size={60} />
                 </div> 
                 <div className="grid">
-                  <div className="flex justify-between gap-[1rem] md:gap-[4rem] w-full">
+                  <div className="flex justify-between gap-[2rem] md:gap-[9rem] w-full">
                   <h2 className="card-title text-2xl md:text-3xl">Suhu Udara</h2>
                   <h2 className="card-title text-2xl md:text-3xl">{suhu}&deg;C</h2>
                   </div>
@@ -438,24 +453,24 @@ const handleTombol4 = async() =>  {
                 </div>
               </div>
       
-              <div className="card w-full md:w-1/4 border-4 border-primary">
+              <div className="card w-[22rem] md:w-1/3 border-4 border-primary">
                 <div className="flex-row text-neutral card-body items-center justify-between">
-                <div className="flex gap-4 text-start">
+                <div className="flex gap-3 text-start">
                 <div className="grid w-20 h-20 rounded-2xl bg-primary text-white place-content-center">
                 <WiHumidity size={60} />
                 </div> 
                     <h2 className="card-title text-2xl md:text-3xl">Kelembaban</h2>
                   </div>
                   <div>
-                  <h2 className="card-title text-2xl md:text-4xl">{kelembaban}%</h2>
+                  <h2 className="card-title text-2xl md:text-3xl">{kelembaban}%</h2>
                   </div>
                 </div>
               </div>
-              <div className="card w-full md:w-1/4 border-4 border-primary">
+              <div className="card w-[22rem] md:w-1/3 border-4 border-primary">
                 <div className="flex-row text-neutral card-body items-center justify-between">
-                <div className="flex gap-4 text-start items-center">
+                <div className="flex gap-3 text-start items-center">
                 <div className="grid w-20 h-20 rounded-2xl bg-primary text-white place-content-center">
-                <BiWater size={60} />
+                <GiPlantWatering size={60} />
                 </div> 
                 <div className="flex-row text-start">
                     <h2 className="card-title text-2xl md:text-3xl">Kelembaban</h2>
@@ -467,29 +482,50 @@ const handleTombol4 = async() =>  {
                   </div>
                 </div>
               </div>
-              <div className="card w-full md:w-1/4 border-4 border-primary">
+              </div>
+              <div className="flex flex-col justify-stretch md:flex-row gap-4">
+              <div className="card w-[22rem] md:w-1/2 border-4 border-primary">
                 <div className="flex-row text-neutral card-body items-center justify-between">
-                <div className="flex gap-4 text-start">
+                <div className="flex gap-3 text-start">
                 <div className="grid w-20 h-20 rounded-2xl bg-primary text-white place-content-center">
                 <RiWaterFlashFill size={60} />
                 </div> 
                 <div className="grid">
-                  <div className="flex justify-between gap-[8rem] w-full">
+                  <div className="flex justify-between gap-[25rem] w-full">
                   <h2 className="card-title text-2xl md:text-3xl">PPM Terukur</h2>
-                  <h2 className="card-title text-2xl md:text-3xl">{ppm}</h2>
+                  <h2 className="card-title text-2xl md:text-4xl">{ppm}</h2>
+                  </div>
+                  <div className="flex justify-between gap-[11rem] w-full">
+                  <h2 className="card-title text-2xl md:text-3xl">PPM Target </h2>
+                  <h2 className="card-title text-2xl md:text-4xl">{targetPPM}</h2>
+                  </div>
+                </div>
+                </div>
+                <div>
+                  </div>
+                </div>
+            </div>
+            <div className="card w-[22rem] md:w-1/2 border-4 border-primary">
+                <div className="flex-row text-neutral card-body items-center justify-between">
+                <div className="flex gap-3 text-start">
+                <div className="grid w-20 h-20 rounded-2xl bg-primary text-white place-content-center">
+                <BiWater size={60} />
+                </div> 
+                <div className="grid">
+                  <div className="flex justify-between gap-[30rem] w-full">
+                  <h2 className="card-title text-2xl md:text-3xl">pH Terukur</h2>
+                  <h2 className="card-title text-2xl md:text-4xl">{pH}</h2>
                   </div>
                   <div className="flex justify-between gap-[0.8rem] w-full">
-                  <h2 className="card-title text-2xl md:text-3xl">PPM Target </h2>
-                  <h2 className="card-title text-2xl md:text-3xl">{targetPPM}</h2>
+                  <h2 className="card-title text-2xl md:text-3xl">pH Target </h2>
+                  <h2 className="card-title text-2xl md:text-4xl">{targetpH}</h2>
                   </div>
                 </div>
-                  
-                  </div>
-                  <div>
-                 
+                </div>
+                <div>
                   </div>
                 </div>
-              </div>
+            </div>
             </div>
             {/* ))} */}
             <div className="divider my-[20px] mx-6" />
@@ -529,8 +565,8 @@ const handleTombol4 = async() =>  {
                     </button>
                     )}
                 </div>
-                <div className="grid text-center justify-items-center p-2 gap-2 ml-12 md:ml-0">
-                <h2 className="card-title text-1xl md:text-2xl">Pompa PPM Down</h2>
+                <div className="grid text-center justify-items-center p-2 gap-2 md:ml-0">
+                <h2 className="card-title text-2xl md:text-2xl">Pompa PPM Down</h2>
                 {tombol2 == false || tombolArdu2 == "1"? (
                    <button
                       className="card w-32 h-24 md:w-48 md:h-32 justify-center items-center  bg-primary transition duration-500 hover:bg-teal-500 border-4 border-base-100 text-base-100"
@@ -589,7 +625,7 @@ const handleTombol4 = async() =>  {
                     </button>
                     )}
                 </div>
-                <div className="grid text-center justify-items-center p-2 gap-2 ml-12 md:ml-0">
+                <div className="grid text-center justify-items-center p-2 gap-2">
                 <h2 className="card-title text-2xl">Pompa pH Down</h2>
                 {tombol4 == false|| tombolArdu4 == "1" ? (
                    <button
@@ -619,8 +655,6 @@ const handleTombol4 = async() =>  {
                     </button>
                     )}
                 </div>
-                
-                
                 </div>
               </div>
               <div className="card w-full md:w-1/4 bg-primary">
