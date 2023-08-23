@@ -11,8 +11,8 @@ function Timepick(props) {
   const format = "HH:mm:ss";
   const [defvaluePPM, setdefValuePPM] = React.useState(dayjs(null));
   const [defvaluepH, setdefValuepH] = React.useState(dayjs(null));
-  const [defvalueSiram, setdefValueSiram] = React.useState(dayjs(null));
-
+  const [defvalueSiramPagi, setdefValueSiramPagi] = React.useState(dayjs(null));
+  const [defvalueSiramSore, setdefValueSiramSore] = React.useState(dayjs(null));
   function subscribeToTopicTemp(topic) {
     console.log(`Subscribing to Topic: ${topic}`);
     mqttClient.subscribe(topic, { qos: 0 });
@@ -21,7 +21,8 @@ function Timepick(props) {
 
     const jadwalPPM = defvaluePPM.format(format);
     const jadwalpH = defvaluepH.format(format);
-    const jadwalSiram =defvalueSiram.format(format);
+    const jadwalSiramPagi =defvalueSiramPagi.format(format);
+    const jadwalSiramSore =defvalueSiramSore.format(format);
     try{
       mqttClient.publish("/targetWaktuPPM", jadwalPPM.toString(), {
         qos: 0,
@@ -31,13 +32,18 @@ function Timepick(props) {
         qos: 0,
         retain: false,
       });
-      mqttClient.publish("/targetWaktuSiram", jadwalSiram.toString(), {
+      mqttClient.publish("/targetWaktuSiramPagi", jadwalSiramPagi.toString(), {
+        qos: 0,
+        retain: false,
+      });
+      mqttClient.publish("/targetWaktuSiramSore", jadwalSiramSore.toString(), {
         qos: 0,
         retain: false,
       });
       await api.post(`/updatewaktu`, null, {
           params: {
-            waktu_siram: jadwalSiram .toString(),
+            waktu_siramPagi: jadwalSiramPagi.toString(),
+            waktu_siramSore: jadwalSiramSore.toString(),
             waktu_ppm: jadwalPPM.toString(),
             waktu_pH: jadwalpH.toString(),
           },
@@ -53,10 +59,12 @@ function Timepick(props) {
       console.log(response.data[0].data[0])
       let waktuppm = response.data[0].data[0].waktu_ppm
       let waktuph = response.data[0].data[0].waktu_pH
-      let waktusiram = response.data[0].data[0].waktu_siram
+      let waktusiramPagi = response.data[0].data[0].waktu_siramPagi
+      let waktusiramSore = response.data[0].data[0].waktu_siramSore
       setdefValuePPM(dayjs(waktuppm, format));
       setdefValuepH(dayjs(waktuph , format));
-      setdefValueSiram(dayjs(waktusiram, format));
+      setdefValueSiramPagi(dayjs(waktusiramPagi, format));
+      setdefValueSiramSore(dayjs(waktusiramSore, format));
     });
   }
   useEffect(()=>{
@@ -94,9 +102,15 @@ function Timepick(props) {
                 />
                 <TimePicker
                   ampm={false}
-                  label="Jadwal Siram"
-                  value={defvalueSiram}
-                  onChange={(newValue) => setdefValueSiram(newValue)}
+                  label="Jadwal Siram Pagi"
+                  value={defvalueSiramPagi}
+                  onChange={(newValue) => setdefValueSiramPagi(newValue)}
+                />
+                <TimePicker
+                  ampm={false}
+                  label="Jadwal Siram Sore"
+                  value={defvalueSiramSore}
+                  onChange={(newValue) => setdefValueSiramSore(newValue)}
                 />
                 <button onClick={handle} className="btn btn-primary text-white">
                   Ubah

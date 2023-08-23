@@ -19,6 +19,7 @@ let buttonPPMU;
 let buttonPPMD;
 let buttonPHU;
 let buttonPHD;
+let buttonSiram;
 
 function Dashboard(){
   const [tombolPPMD, setTombolPPMD] = useState(true);
@@ -39,11 +40,13 @@ function Dashboard(){
   const [tombol2,setTombol2] = useState(1);
   const [tombol3,setTombol3] = useState(1);
   const [tombol4,setTombol4] = useState(1);
+  const [tombol5,setTombol5] = useState(1);
   const [tombolArdu1,setTombolArdu1] = useState(false);
   const [tombolArdu2,setTombolArdu2] = useState(false);
   const [tombolArdu3,setTombolArdu3] = useState(false);
   const [tombolArdu4,setTombolArdu4] = useState(false);
-  // const getData1 = async () => {
+  const [tombolArdu5,setTombolArdu5] = useState(false);
+  // const getData1 = async () => 
   //   await api.get(`/getsingledata`).then((response) => {
   //     setDataSensor(response.data[0].data)
   //   });
@@ -292,10 +295,14 @@ const startAwal = async () => {
       if(topic === '/buttonPHD'){
         buttonPHD = message.toString();
       }
+      if(topic === '/buttonSiram'){
+        buttonSiram = message.toString();
+      }
        setTombolArdu1(buttonPPMU);
        setTombolArdu2(buttonPPMD);
        setTombolArdu3(buttonPHU);
        setTombolArdu4(buttonPHD);
+       setTombolArdu5(buttonSiram);
       })
     }catch{
       console.log(error)
@@ -397,6 +404,21 @@ const handleTombol4 = async() =>  {
   console.log(error)
 }
 }
+const handleTombol5 = async() =>  {
+  try{
+  if(tombol5 == "0"){
+    setTombol5("1");
+  }else{
+    setTombol5("0");
+  }
+  mqttClient.publish("/relaySiram", tombol5.toString(), {
+    qos: 0,
+    retain: false,
+  });
+}catch{
+  console.log(error)
+}
+}
   useEffect(() => {
     // getData1();
     // getDataTombolPPMD();
@@ -417,6 +439,7 @@ const handleTombol4 = async() =>  {
     subscribeToTopicTemp("/buttonPPMD"); 
     subscribeToTopicTemp("/buttonPHU");
     subscribeToTopicTemp("/buttonPHD");
+    subscribeToTopicTemp("/buttonSiram");
     terimaSuhu();
     validateRelay();
     startAwal();
@@ -440,7 +463,7 @@ const handleTombol4 = async() =>  {
                 <TbTemperature size={60} />
                 </div> 
                 <div className="grid">
-                  <div className="flex justify-between gap-[2rem] md:gap-[9rem] w-full">
+                  <div className="flex justify-between gap-[2rem] 2xl:gap-[9rem] w-full">
                   <h2 className="card-title text-2xl md:text-3xl">Suhu Udara</h2>
                   <h2 className="card-title text-2xl md:text-3xl">{suhu}&deg;C</h2>
                   </div>
@@ -453,28 +476,31 @@ const handleTombol4 = async() =>  {
                 </div>
               </div>
       
-              <div className="card w-[22rem] md:w-1/3 border-4 border-primary">
+              <div className="card w-[22rem] md:w-[25rem] 2xl:w-1/3 border-4 border-primary">
                 <div className="flex-row text-neutral card-body items-center justify-between">
                 <div className="flex gap-3 text-start">
                 <div className="grid w-20 h-20 rounded-2xl bg-primary text-white place-content-center">
                 <WiHumidity size={60} />
                 </div> 
-                    <h2 className="card-title text-2xl md:text-3xl">Kelembaban</h2>
+                <div className="flex-row text-start">
+                    <h2 className="card-title text-2xl 2xl:text-3xl">Kelembaban</h2>
+                    <h2 className="card-title text-2xl 2xl:text-3xl">Udara</h2>
+                    </div>
                   </div>
                   <div>
-                  <h2 className="card-title text-2xl md:text-3xl">{kelembaban}%</h2>
+                  <h2 className="card-title text-2xl md:text-2xl 2xl:text-3xl">{kelembaban}%</h2>
                   </div>
                 </div>
               </div>
-              <div className="card w-[22rem] md:w-1/3 border-4 border-primary">
+              <div className="card w-[22rem] md:w-[25rem] 2xl:w-1/3 border-4 border-primary">
                 <div className="flex-row text-neutral card-body items-center justify-between">
-                <div className="flex gap-3 text-start items-center">
+                <div className="flex gap-1 text-start items-center">
                 <div className="grid w-20 h-20 rounded-2xl bg-primary text-white place-content-center">
                 <GiPlantWatering size={60} />
                 </div> 
                 <div className="flex-row text-start">
-                    <h2 className="card-title text-2xl md:text-3xl">Kelembaban</h2>
-                    <h2 className="card-title text-2xl md:text-3xl">Media</h2>
+                    <h2 className="card-title text-2xl ">Kelembaban</h2>
+                    <h2 className="card-title text-2xl ">Media</h2>
                   </div>
                   </div>
                   <div>
@@ -491,11 +517,11 @@ const handleTombol4 = async() =>  {
                 <RiWaterFlashFill size={60} />
                 </div> 
                 <div className="grid">
-                  <div className="flex justify-between gap-[25rem] w-full">
+                  <div className="flex justify-between md:gap-[25rem] lg:gap-[7rem] 2xl:gap-[25rem] w-[110%] md:w-full">
                   <h2 className="card-title text-2xl md:text-3xl">PPM Terukur</h2>
                   <h2 className="card-title text-2xl md:text-4xl">{ppm}</h2>
                   </div>
-                  <div className="flex justify-between gap-[11rem] w-full">
+                  <div className="flex justify-between md:gap-[11rem] lg:gap-[7rem] 2xl:gap-[11rem] w-[110%] md:w-full">
                   <h2 className="card-title text-2xl md:text-3xl">PPM Target </h2>
                   <h2 className="card-title text-2xl md:text-4xl">{targetPPM}</h2>
                   </div>
@@ -512,11 +538,11 @@ const handleTombol4 = async() =>  {
                 <BiWater size={60} />
                 </div> 
                 <div className="grid">
-                  <div className="flex justify-between gap-[30rem] w-full">
+                  <div className="flex justify-between md:gap-[30rem] lg:gap-[13rem] 2xl:gap-[30rem] w-[118%] md:w-full">
                   <h2 className="card-title text-2xl md:text-3xl">pH Terukur</h2>
                   <h2 className="card-title text-2xl md:text-4xl">{pH}</h2>
                   </div>
-                  <div className="flex justify-between gap-[0.8rem] w-full">
+                  <div className="flex justify-between gap-[0.8rem] lg:gap-[13rem] 2xl:gap-[0.8rem] w-[117%] md:w-full">
                   <h2 className="card-title text-2xl md:text-3xl">pH Target </h2>
                   <h2 className="card-title text-2xl md:text-4xl">{targetpH}</h2>
                   </div>
@@ -531,7 +557,7 @@ const handleTombol4 = async() =>  {
             <div className="divider my-[20px] mx-6" />
             <div className="grid mt-[-1rem]">
             <h2 className="card-title text-4xl ml-2">Kontrol Alat</h2>
-            <div className="grid md:flex gap-4 w-full mt-4">
+            <div className="grid xl:flex gap-4 w-full mt-4">
              
             <div className="card w-full md:w-3/4 border-4 border-primary">
                 <div className="grid grid-cols-2 md:flex md:flex-row text-neutral card-body justify-between">
@@ -539,7 +565,7 @@ const handleTombol4 = async() =>  {
                 <h2 className="card-title text-2xl">Pompa PPM Up</h2>
                 {tombol1 == false || tombolArdu1 == "1"? (
                    <button
-                      className="card w-32 h-24 md:w-48 md:h-32 justify-center items-center  bg-primary transition duration-500 hover:bg-teal-500 border-4 border-base-100 text-base-100"
+                      className="card w-32 h-24 md:w-[9rem] md:h-[7rem] 2xl:w-48 2xl:h-32 justify-center items-center  bg-primary transition duration-500 hover:bg-teal-500 border-4 border-base-100 text-base-100"
                       onClick={() => handleTombol1()}>
                       <div className="card-body">
                         <div className="flex gap-4">
@@ -552,7 +578,7 @@ const handleTombol4 = async() =>  {
                     </button>
                    ) : (
                     <button
-                      className="card w-32 h-24 md:w-48 md:h-32 justify-center items-center  bg-teal-600 transition duration-500 hover:bg-teal-500 border-4 border-base-100 text-base-100"
+                      className="card w-32 h-24 md:w-[9rem] md:h-[7rem] 2xl:w-48 2xl:h-32 justify-center items-center  bg-teal-600 transition duration-500 hover:bg-teal-500 border-4 border-base-100 text-base-100"
                       onClick={() => handleTombol1()}>
                       <div className="card-body">
                         <div className="flex gap-4">
@@ -569,7 +595,7 @@ const handleTombol4 = async() =>  {
                 <h2 className="card-title text-2xl md:text-2xl">Pompa PPM Down</h2>
                 {tombol2 == false || tombolArdu2 == "1"? (
                    <button
-                      className="card w-32 h-24 md:w-48 md:h-32 justify-center items-center  bg-primary transition duration-500 hover:bg-teal-500 border-4 border-base-100 text-base-100"
+                      className="card w-32 h-24 md:w-[9rem] md:h-[7rem] 2xl:w-48 2xl:h-32 justify-center items-center  bg-primary transition duration-500 hover:bg-teal-500 border-4 border-base-100 text-base-100"
                       onClick={() => handleTombol2()}>
                       <div className="card-body">
                         <div className="flex gap-4">
@@ -582,7 +608,7 @@ const handleTombol4 = async() =>  {
                     </button>
                     ) : ( 
                     <button
-                      className="card w-32 h-24 md:w-48 md:h-32 justify-center items-center  bg-teal-600 transition duration-500 hover:bg-teal-500 border-4 border-base-100 text-base-100"
+                      className="card w-32 h-24 md:w-[9rem] md:h-[7rem] 2xl:w-48 2xl:h-32 justify-center items-center  bg-teal-600 transition duration-500 hover:bg-teal-500 border-4 border-base-100 text-base-100"
                       onClick={() => handleTombol2()}>
                       <div className="card-body">
                         <div className="flex gap-4">
@@ -599,7 +625,7 @@ const handleTombol4 = async() =>  {
                 <h2 className="card-title text-2xl">Pompa pH Up</h2>
                 {tombol3 == false || tombolArdu3 == "1"? (
                    <button
-                      className="card w-32 h-24 md:w-48 md:h-32 justify-center items-center  bg-primary transition duration-500 hover:bg-teal-500 border-4 border-base-100 text-base-100"
+                      className="card w-32 h-24 md:w-[9rem] md:h-[7rem] 2xl:w-48 2xl:h-32 justify-center items-center  bg-primary transition duration-500 hover:bg-teal-500 border-4 border-base-100 text-base-100"
                       onClick={() => handleTombol3()}>
                       <div className="card-body">
                         <div className="flex gap-4">
@@ -612,7 +638,7 @@ const handleTombol4 = async() =>  {
                     </button>
                     ) : ( 
                     <button
-                      className="card w-32 h-24 md:w-48 md:h-32 justify-center items-center  bg-teal-600 transition duration-500 hover:bg-teal-500 border-4 border-base-100 text-base-100"
+                      className="card w-32 h-24 md:w-[9rem] md:h-[7rem] 2xl:w-48 2xl:h-32 justify-center items-center  bg-teal-600 transition duration-500 hover:bg-teal-500 border-4 border-base-100 text-base-100"
                       onClick={() => handleTombol3()}>
                       <div className="card-body">
                         <div className="flex gap-4">
@@ -629,7 +655,7 @@ const handleTombol4 = async() =>  {
                 <h2 className="card-title text-2xl">Pompa pH Down</h2>
                 {tombol4 == false|| tombolArdu4 == "1" ? (
                    <button
-                      className="card w-32 h-24 md:w-48 md:h-32 justify-center items-center  bg-primary transition duration-500 hover:bg-teal-500 border-4 border-base-100 text-base-100"
+                      className="card w-32 h-24 md:w-[9rem] md:h-[7rem] 2xl:w-48 2xl:h-32 justify-center items-center  bg-primary transition duration-500 hover:bg-teal-500 border-4 border-base-100 text-base-100"
                       onClick={() => handleTombol4()}>
                       <div className="card-body">
                         <div className="flex gap-4">
@@ -642,8 +668,38 @@ const handleTombol4 = async() =>  {
                     </button>
                     ) : ( 
                     <button
-                      className="card w-32 h-24 md:w-48 md:h-32 justify-center items-center  bg-teal-600 transition duration-500 hover:bg-teal-500 border-4 border-base-100 text-base-100"
+                      className="card w-32 h-24 md:w-[9rem] md:h-[7rem] 2xl:w-48 2xl:h-32 justify-center items-center  bg-teal-600 transition duration-500 hover:bg-teal-500 border-4 border-base-100 text-base-100"
                       onClick={() => handleTombol4()}>
+                      <div className="card-body">
+                        <div className="flex gap-4">
+                          <h2 className="card-title text-2xl xl:text-3xl my-2">
+                            Mati
+                          </h2>
+                          {/* <GiWateringCan size={iconSize.size} /> */}
+                        </div>
+                      </div>
+                    </button>
+                    )}
+                </div>
+                <div className="grid text-center justify-items-center p-2 gap-2">
+                <h2 className="card-title text-2xl">Pompa Siram</h2>
+                {tombol5 == false || tombolArdu5 == "1"? (
+                   <button
+                      className="card w-32 h-24 md:w-[9rem] md:h-[7rem] 2xl:w-48 2xl:h-32 justify-center items-center  bg-primary transition duration-500 hover:bg-teal-500 border-4 border-base-100 text-base-100"
+                      onClick={() => handleTombol5()}>
+                      <div className="card-body">
+                        <div className="flex gap-4">
+                          <h2 className="card-title text-2xl xl:text-3xl my-2">
+                            Nyala
+                          </h2>
+                          {/* <GiWateringCan size={iconSize.size} /> */}
+                        </div>
+                      </div>
+                    </button>
+                    ) : ( 
+                    <button
+                      className="card w-32 h-24 md:w-[9rem] md:h-[7rem] 2xl:w-48 2xl:h-32 justify-center items-center  bg-teal-600 transition duration-500 hover:bg-teal-500 border-4 border-base-100 text-base-100"
+                      onClick={() => handleTombol5()}>
                       <div className="card-body">
                         <div className="flex gap-4">
                           <h2 className="card-title text-2xl xl:text-3xl my-2">
